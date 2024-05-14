@@ -7,9 +7,13 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
+    - port: {{ .Values.service.obsidian.port }}
       targetPort: http
       protocol: TCP
-      name: http
+      name: vnc
+    - port: {{ .Values.service.dev_proxy.port }}
+      targetPort: http
+      protocol: TCP
+      name: devport
   selector:
     {{- include "obsidian.selectorLabels" . | nindent 4 }}

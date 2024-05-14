@@ -34,26 +34,52 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.image.obsidian.repository }}:{{ .Values.image.obsidian.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.obsidian.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.obsidian.port }}
               protocol: TCP
           livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
+            tcpSocket:
+              port: {{ .Values.service.obsidian.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 60
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
           volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
+            - name: vaults
+              mountPath: "/vaults"
+              readOnly: false
+            - name: config
+              mountPath: "/config"
+              readOnly: false
+        - name: {{ .Release.Name }}-devport-proxy
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.proxy.repository }}:{{ .Values.image.proxy.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.proxy.pullPolicy }}
+          args: ["TCP-LISTEN:{{ .Values.service.dev_proxy.port }},fork", "TCP:localhost:8315"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.dev_proxy.port }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.service.dev_proxy.port }}
+            initialDelaySeconds: 60
+            periodSeconds: 60
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        -
+          name: vaults
+          persistentVolumeClaim:
+           claimName: {{ .Release.Name }}-vaults-pv-claim
+        -
+          name: config
+          persistentVolumeClaim:
+           claimName: {{ .Release.Name }}-config-pv-claim
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
