@@ -8,11 +8,11 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.obsidian.port }}
-      targetPort: http
+      targetPort: {{ .Values.service.obsidian.port }}
       protocol: TCP
       name: vnc
     - port: {{ .Values.service.dev_proxy.port }}
-      targetPort: http
+      targetPort: {{ .Values.service.dev_proxy.port }}
       protocol: TCP
       name: devport
   selector:
