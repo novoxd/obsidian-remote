@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-vaults-pv-claim
 spec:
-  storageClassName: {{ .Values.persistentVolumeClaim.storageClassName }}
+#  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:
@@ -15,7 +15,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-config-pv-claim
 spec:
-  storageClassName: {{ .Values.persistentVolumeClaim.storageClassName }}
+#  storageClassName: {{ .Values.config_volume.size }}
   accessModes:
     - ReadWriteOnce
   resources:
