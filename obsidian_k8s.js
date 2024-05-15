@@ -32,8 +32,10 @@ function newObsidianInstance(instanceName, vncPort=8080, devPort=8081) {
 
 
     for (var i = 1; i <= POD_WAIT_READY_SECONDS; i++) {
-        const podStatusResult = JSON.parse(execSync(podStatusExec).toString());
-        console.log(Object.keys(podStatusResult['containerStatuses'][1]['state']));
+        const podStatusResult = JSON.parse(execSync(podStatusExec).toString().trim());
+       if (podStatusResult['phase'] === 'Pending') continue
+
+        console.log(podStatusResult);
         if (
             Object.keys(podStatusResult['containerStatuses'][0]['state'])[0] === 'running' &
             Object.keys(podStatusResult['containerStatuses'][1]['state'])[0] === 'running'
@@ -45,7 +47,7 @@ function newObsidianInstance(instanceName, vncPort=8080, devPort=8081) {
     }
 
     const podIpExec = KUBECTL_EXCLUDABLE + ` get services --selector=app.kubernetes.io/name=obsidian --selector=app.kubernetes.io/instance=${instanceName} --output=jsonpath='{.items[*].spec.clusterIP}'`
-    const podIpResult = execSync(podIpExec).toString();
+    const podIpResult = execSync(podIpExec).toString().trim();
 
     return {
         'ip': podIpResult,
